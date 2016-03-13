@@ -1,26 +1,28 @@
 {
-	"name": "couchtransform",
-	"version": "0.1.0",
-	"description": "CouchDB utility to perform mass transformations of documents",
-	"repository": "https://github.com/ntsang168/couchtransform",
-	"keywords": [
-		"CouchDB",
-		"Cloudant",
-		"couch",
-		"command-line",
-		"couchtransform"
-	  ],
-	"author": "Nicholas Tsang, Michael McCawley",
-	"license": "Apache-2.0",
-	"dependencies": {
-		"async": "^1.5.2",
-		"cloudant": "^1.4.1",
-		"debug": "^2.2.0",
-		"minimist": "^1.2.0"
-	},
-	"devDependencies": {},
-	"main": "./app.js",
-	"bin": {
-		"couchtransform": "bin/couchtransform.bin.js"
-	}
+  "name": "couchtransform",
+  "version": "0.1.0",
+  "description": "CouchDB utility to perform mass transformations of documents",
+  "repository": "https://github.com/ntsang168/couchtransform",
+  "keywords": [
+    "CouchDB",
+    "Cloudant",
+    "couch",
+    "command-line",
+    "couchtransform"
+  ],
+  "author": "Nicholas Tsang, Michael McCawley",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "JSONStream": "^1.1.1",
+    "async": "^1.5.2",
+    "cloudant": "^1.4.1",
+    "debug": "^2.2.0",
+    "format-json-stream": "^0.1.5",
+    "minimist": "^1.2.0"
+  },
+  "devDependencies": {},
+  "main": "./app.js",
+  "bin": {
+    "couchtransform": "bin/couchtransform.bin.js"
+  }
 }

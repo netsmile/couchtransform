@@ -5,41 +5,62 @@ var defaults = require('./defaults.js'),
 	argv = require('minimist')(process.argv.slice(2));
 
 // CouchDB url
-if( typeof process.env.COUCH_URL != "undefined") {
+if (typeof process.env.COUCH_URL != "undefined") {
 	theconfig.COUCH_URL = process.env.COUCH_URL;
 }
 
 // CouchDB database
-if( typeof process.env.COUCH_DATABASE != "undefined") {
+if (typeof process.env.COUCH_DATABASE != "undefined") {
 	theconfig.COUCH_DATABASE = process.env.COUCH_DATABASE;
 }
 
 // CouchDB database design
-if( typeof process.env.COUCH_DESIGN != "undefined") {
+if (typeof process.env.COUCH_DESIGN != "undefined") {
 	theconfig.COUCH_DESIGN = process.env.COUCH_DESIGN;
 }
 
 // CouchDB database view
-if( typeof process.env.COUCH_VIEW != "undefined") {
+if (typeof process.env.COUCH_VIEW != "undefined") {
 	theconfig.COUCH_VIEW = process.env.COUCH_VIEW;
 }
 
 // CouchDB database view
-if( typeof process.env.COUCH_VIEW_PARAMS != "undefined") {
+if (typeof process.env.COUCH_VIEW_PARAMS != "undefined") {
 	theconfig.COUCH_VIEW_PARAMS = process.env.COUCH_VIEW_PARAMS;
 }
 
 // Transformation function
-if( typeof process.env.COUCH_TRANSFORM != "undefined") {
-	theconfig.COUCH_TRANSFORM = require(path.resolve(process.cwd(),process.env.COUCH_TRANSFORM));
+if (typeof process.env.COUCH_TRANSFORM != "undefined") {
+	theconfig.COUCH_TRANSFORM = path.resolve(process.cwd(),process.env.COUCH_TRANSFORM);
+	theconfig.COUCH_TRANSFORM_OBJ = require(path.resolve(process.cwd(),process.env.COUCH_TRANSFORM));
+}
+
+// Output file
+if (typeof process.env.OUTPUT_FILE != "undefined") {
+	theconfig.OUTPUT_FILE = path.resolve(process.cwd(),process.env.OUTPUT_FILE);
+}
+
+// CouchDB destination URL
+if (typeof process.env.COUCH_DEST_URL != "undefined") {
+	theconfig.COUCH_DEST_URL = process.env.COUCH_DEST_URL;
+}
+
+// CouchDB destination database
+if (typeof process.env.COUCH_DEST_DATABASE != "undefined") {
+	theconfig.COUCH_DEST_DATABASE = process.env.COUCH_DEST_DATABASE;
+}
+
+// Buffer size specified
+if( typeof process.env.COUCH_BUFFER_SIZE != "undefined") {
+	theconfig.COUCH_BUFFER_SIZE = parseInt(process.env.COUCH_BUFFER_SIZE);
 }
 
 // Parallelism specified
-if( typeof process.env.COUCH_PARALLELISM != "undefined") {
+if (typeof process.env.COUCH_PARALLELISM != "undefined") {
 	theconfig.COUCH_PARALLELISM = parseInt(process.env.COUCH_PARALLELISM);
 }
 
-// override with command-line parameters
+// Override with command-line parameters
 if(argv.url) {
 	theconfig.COUCH_URL = argv.url;
 }
@@ -56,7 +77,20 @@ if(argv.view_params) {
 	theconfig.COUCH_VIEW_PARAMS = argv.view_params;
 }
 if(argv.transform) {
-	theconfig.COUCH_TRANSFORM = require(path.resolve(process.cwd(),argv.transform))
+	theconfig.COUCH_TRANSFORM = path.resolve(process.cwd(),argv.transform);
+	theconfig.COUCH_TRANSFORM_OBJ = require(path.resolve(process.cwd(),argv.transform))
+}
+if(argv.output_file) {
+	theconfig.OUTPUT_FILE = path.resolve(process.cwd(),argv.output_file);
+}
+if(argv.dest_url) {
+	theconfig.COUCH_DEST_URL = argv.dest_url;
+}
+if(argv.dest_db) {
+	theconfig.COUCH_DEST_DATABASE = argv.dest_db;
+}
+if(argv.buffer) {
+	theconfig.COUCH_BUFFER_SIZE = parseInt(argv.buffer);
 }
 if(argv.parallelism) {
 	theconfig.COUCH_PARALLELISM = parseInt(argv.parallelism);

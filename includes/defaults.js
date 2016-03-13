@@ -3,8 +3,13 @@ var defaults = {
 	COUCH_DATABASE: "test",
 	COUCH_DESIGN: null,
 	COUCH_VIEW: null,
-	COUCH_VIEW_PARAMS: null,
+	COUCH_VIEW_PARAMS: "{\"include_docs\":true}",
 	COUCH_TRANSFORM: null,
+	COUCH_TRANSFORM_OBJ: null,
+	OUTPUT_FILE: null,
+	COUCH_DEST_URL: null,
+	COUCH_DEST_DATABASE: null,
+	COUCH_BUFFER_SIZE: 500,
 	COUCH_PARALLELISM: 1
 };
 
