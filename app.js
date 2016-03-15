@@ -81,7 +81,7 @@ var execute = function(opts, callback) {
 			});
 		});
 	} else {
-		db.list(function(err, result) {
+		db.list(JSON.parse(opts.COUCH_VIEW_PARAMS), function(err, result) {
 			if (err) return callback(err);
 			transform(opts, result, function(err, result) {
 				if (err) return callback(err);
