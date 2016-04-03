@@ -1,6 +1,6 @@
 {
   "name": "couchtransform",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "CouchDB utility to perform mass transformations of documents",
   "repository": "https://github.com/ntsang168/couchtransform",
   "keywords": [
