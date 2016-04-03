@@ -6,9 +6,11 @@ var defaults = {
 	COUCH_VIEW_PARAMS: "{\"include_docs\":true}",
 	COUCH_TRANSFORM: null,
 	COUCH_TRANSFORM_OBJ: null,
+	INPUT_FILE: null,
 	OUTPUT_FILE: null,
 	COUCH_DEST_URL: null,
 	COUCH_DEST_DATABASE: null,
+	COUCH_PAGE_SIZE: 1000,
 	COUCH_BUFFER_SIZE: 500,
 	COUCH_PARALLELISM: 1
 };

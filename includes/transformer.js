@@ -1,4 +1,4 @@
-var stream = require('stream');
+var stream = require("stream");
 
 module.exports = function(func) {
 	var transformer = new stream.Transform( { objectMode: true } );

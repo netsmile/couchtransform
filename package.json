@@ -18,7 +18,8 @@
     "cloudant": "^1.4.1",
     "debug": "^2.2.0",
     "format-json-stream": "^0.1.5",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "through": "^2.3.8"
   },
   "devDependencies": {},
   "main": "./app.js",

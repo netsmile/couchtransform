@@ -35,6 +35,11 @@ if (typeof process.env.COUCH_TRANSFORM != "undefined") {
 	theconfig.COUCH_TRANSFORM_OBJ = require(path.resolve(process.cwd(),process.env.COUCH_TRANSFORM));
 }
 
+// Input file
+if (typeof process.env.INPUT_FILE != "undefined") {
+	theconfig.INPUT_FILE = path.resolve(process.cwd(),process.env.INPUT_FILE);
+}
+
 // Output file
 if (typeof process.env.OUTPUT_FILE != "undefined") {
 	theconfig.OUTPUT_FILE = path.resolve(process.cwd(),process.env.OUTPUT_FILE);
@@ -48,6 +53,11 @@ if (typeof process.env.COUCH_DEST_URL != "undefined") {
 // CouchDB destination database
 if (typeof process.env.COUCH_DEST_DATABASE != "undefined") {
 	theconfig.COUCH_DEST_DATABASE = process.env.COUCH_DEST_DATABASE;
+}
+
+// Page size specified
+if( typeof process.env.COUCH_PAGE_SIZE != "undefined") {
+	theconfig.COUCH_PAGE_SIZE = parseInt(process.env.COUCH_PAGE_SIZE);
 }
 
 // Buffer size specified
@@ -80,6 +90,9 @@ if(argv.transform) {
 	theconfig.COUCH_TRANSFORM = path.resolve(process.cwd(),argv.transform);
 	theconfig.COUCH_TRANSFORM_OBJ = require(path.resolve(process.cwd(),argv.transform))
 }
+if(argv.input_file) {
+	theconfig.INPUT_FILE = path.resolve(process.cwd(),argv.input_file);
+}
 if(argv.output_file) {
 	theconfig.OUTPUT_FILE = path.resolve(process.cwd(),argv.output_file);
 }
@@ -88,6 +101,9 @@ if(argv.dest_url) {
 }
 if(argv.dest_db) {
 	theconfig.COUCH_DEST_DATABASE = argv.dest_db;
+}
+if(argv.page) {
+	theconfig.COUCH_PAGE_SIZE = parseInt(argv.page);
 }
 if(argv.buffer) {
 	theconfig.COUCH_BUFFER_SIZE = parseInt(argv.buffer);
