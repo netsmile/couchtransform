@@ -7,10 +7,56 @@ var debug = require("debug")("couchtransform"),
 	through = require("through");
 	defaults = require("./includes/defaults.js");
 
+var cloudant;
+var db;
+
+/*
+ * Set pages data based on view
+ */
+function setPagesData(design, view, viewParams, pageSize, callback) {
+	function calculatePages(data) {
+		var pagesData = {
+			total_rows: 0,
+			rows: 0,
+			pages: []
+		};
+
+		pagesData.total_rows = data.total_rows;
+		pagesData.rows = data.rows.length;
+		var current = 0;
+		var page = 1;
+		while (current < pagesData.rows) {
+			pagesData.pages.push({
+				id: data.rows[current].id,
+				key: data.rows[current].key,
+				page: page
+			});
+			current += pageSize;
+			page++;
+		}
+
+		return pagesData;
+	}
+
+	var params = viewParams;
+	params.include_docs = false;
+	if (design && view) {
+		db.view(design, view, params, function(err, result) {
+			if (err) return callback(err);
+			callback(null, calculatePages(result));
+		});
+	} else {
+		db.list(params, function(err, result) {
+			if (err) return callback(err);
+			callback(null, calculatePages(result));
+		});
+	}
+}
+
 /*
  * Transform the documents and save
  */
-function transform(opts, data, callback) {
+function transform(opts, page, data, callback) {
 	var transformer = require("./includes/transformer.js")(opts.COUCH_TRANSFORM_OBJ);
 
 	var rs = new stream.Readable();
@@ -23,7 +69,7 @@ function transform(opts, data, callback) {
 		var offset = data.offset;
 		if (opts.OUTPUT_FILE) {
 			writer = fs.createWriteStream(opts.OUTPUT_FILE, {flags: "a"});
-			writer.write("{\n\"page_offset\": " + offset + ",");
+			writer.write("{\n\"page\": " + page + ",");
 			writer.write("\n\"docs\":\n");
 			output = "output file " + opts.OUTPUT_FILE;
 
@@ -31,7 +77,7 @@ function transform(opts, data, callback) {
 				this.queue(data);
 			}, function end() {
 				this.queue("\n},\n");
-				debug("Completed writing to " + output);
+				debug("[Page " + page + "] - Completed writing to " + output);
 				callback(null);
 			});
 
@@ -56,11 +102,11 @@ function transform(opts, data, callback) {
 		}
 
 		writer.on("written", function(data) {
-			debug("[Page offset " + offset + "] - Wrote " + data.documents + " (" + data.total + ") documents");
+			debug("[Page " + page + "] - Wrote " + data.documents + " (" + data.total + ") documents");
 		});
 
 		writer.on("writecomplete", function() {
-			debug("[Page offset " + offset + "] - Completed writing to " + output);
+			debug("[Page " + page + "] - Completed writing to " + output);
 			callback(null);
 		});
 
@@ -78,8 +124,8 @@ function transform(opts, data, callback) {
 var execute = function(opts, callback) {
 	opts = defaults.merge(opts);
 
-	var cloudant = require("cloudant")(opts.COUCH_URL);
-	var db = cloudant.use(opts.COUCH_DATABASE);
+	cloudant = require("cloudant")(opts.COUCH_URL);
+	db = cloudant.use(opts.COUCH_DATABASE);
 
 	if (opts.INPUT_FILE) {
 		var inputFile = require(opts.INPUT_FILE);
@@ -88,41 +134,34 @@ var execute = function(opts, callback) {
 			callback(null);
 		});
 	} else if (opts.COUCH_DESIGN && opts.COUCH_VIEW) {
-		var params = {limit: 1};
 		debug("Reading docs from view " + "_design/" + opts.COUCH_DESIGN + "/_view/" + opts.COUCH_VIEW);
-		db.view(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, function(err, result) {
-			if (err) return callback(err);
-			var totalRows = result.total_rows;
-			var start = 0;
-			var viewParams = JSON.parse(opts.COUCH_VIEW_PARAMS);
-			if (viewParams.limit) {
-				totalRows = viewParams.limit;
-			}
-			if (viewParams.skip) {
-				totalRows += viewParams.skip;
-				start = viewParams.skip;
-			}
-			debug("Total docs to process " + totalRows);
-			debug("Starting row " + start);
-			var pages = [];
-			var current = start;
-			while (current < totalRows) {
-				pages.push(current);
-				current += opts.COUCH_PAGE_SIZE;
-			}
+		var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
+		setPagesData(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, opts.COUCH_PAGE_SIZE, function(err, pagesData) {
+			debug("Total rows " + pagesData.total_rows);
+			debug("Rows to process " + pagesData.rows);
+			debug("Number of pages " + pagesData.pages.length);
+			//debug("Pages " + JSON.stringify(pagesData.pages, null, '  '));
 			var parallelism = opts.COUCH_PARALLELISM;
 			if (opts.OUTPUT_FILE) {
 				parallelism = 1;
 			}
-			async.forEachLimit(pages, parallelism, function(page, cb) {
-				var params = viewParams;
-				params.skip = page;
+			async.forEachLimit(pagesData.pages, parallelism, function(page, cb) {
+				var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
+				params.startkey_docid = page.id;
+				params.startkey = page.key;
 				params.limit = opts.COUCH_PAGE_SIZE;
 				db.view(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, function(err, result) {
 					if (err) return cb(err);
-					debug("[Page offset " + result.offset + "] - docs to process " + result.rows.length);
-					transform(opts, result, function(err, result) {
+					var startDate = new Date();
+					debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
+					debug("[Page " + page.page + "] - startkey " + page.key);
+					debug("[Page " + page.page + "] - startkey_docid " + page.id);
+					debug("[Page " + page.page + "] - docs to process " + result.rows.length);
+					transform(opts, page.page, result, function(err, result) {
 						if (err) return cb(err);
+						var endDate = new Date();
+						var diff = Math.abs(startDate - endDate);
+						debug("[Page " + page.page + "] - END " + endDate.toISOString() + ", duration " + diff + "ms");
 						cb(null);
 					});
 				});
@@ -132,46 +171,40 @@ var execute = function(opts, callback) {
 			});
 		});
 	} else {
-		var params = {limit: 1};
 		debug("Reading docs from _all_docs");
-		db.list(params, function(err, result) {
+		var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
+		setPagesData(null, null, params, opts.COUCH_PAGE_SIZE, function(err, pagesData) {
 			if (err) return callback(err);
-			var totalRows = result.total_rows;
-			var start = 0;
-			var viewParams = JSON.parse(opts.COUCH_VIEW_PARAMS);
-			if (viewParams.limit) {
-				totalRows = viewParams.limit;
-			}
-			if (viewParams.skip) {
-				totalRows += viewParams.skip;
-				start = viewParams.skip;
-			}
-			debug("Total docs to process " + totalRows);
-			debug("Starting row " + start);
-			var pages = [];
-			var current = start;
-			while (current < totalRows) {
-				pages.push(current);
-				current += opts.COUCH_PAGE_SIZE;
-			}
+			debug("Total rows " + pagesData.total_rows);
+			debug("Rows to process " + pagesData.rows);
+			debug("Number of pages " + pagesData.pages.length);
+			//debug("Pages " + JSON.stringify(pagesData.pages, null, '  '));
 			var parallelism = opts.COUCH_PARALLELISM;
 			if (opts.OUTPUT_FILE) {
 				parallelism = 1;
 			}
-			async.forEachLimit(pages, parallelism, function(page, cb) {
-				var params = viewParams;
-				params.skip = page;
+			async.forEachLimit(pagesData.pages, parallelism, function(page, cb) {
+				var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
+				params.startkey_docid = page.id;
+				params.startkey = page.key;
 				params.limit = opts.COUCH_PAGE_SIZE;
 				db.list(params, function(err, result) {
 					if (err) return cb(err);
-					debug("[Page offset " + result.offset + "] - docs to process " + result.rows.length);
-					transform(opts, result, function(err, result) {
+					var startDate = new Date();
+					debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
+					debug("[Page " + page.page + "] - startkey " + page.key);
+					debug("[Page " + page.page + "] - startkey_docid " + page.id);
+					debug("[Page " + page.page + "] - docs to process " + result.rows.length);
+					transform(opts, page.page, result, function(err, result) {
 						if (err) return cb(err);
+						var endDate = new Date();
+						var diff = Math.abs(startDate - endDate);
+						debug("[Page " + page.page + "] - END " + endDate.toISOString() + ", duration " + diff + "ms");
 						cb(null);
 					});
 				});
 			}, function(err) {
-				if (err) callback(err);
+				if (err) return callback(err);
 				callback(null);
 			});
 		});
