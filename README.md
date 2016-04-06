@@ -222,18 +222,57 @@ Configure the options and then execute CouchTransform from the command-line. If 
  "COUCH_PARALLELISM": 1
 } +2ms
   couchtransform ******************** +0ms
-  couchtransform Reading docs from myview +162ms
-  couchtransform Total docs to process 1863 +190ms
-  couchtransform Starting row 0 +0ms
-  couchtransform [Page offset 0] - docs to process 1000 +322ms
-  couchtransform [Page offset 0] - Wrote 500 (500) documents +1s
-  couchtransform [Page offset 0] - Wrote 500 (1000) documents +998ms
-  couchtransform [Page offset 0] - Wrote 0 (1000) documents +75ms
-  couchtransform [Page offset 0] - Completed writing to database mydatabase +93ms
-  couchtransform [Page offset 4000] - docs to process 863 +2s
-  couchtransform [Page offset 4000] - Wrote 500 (500) documents +1s
-  couchtransform [Page offset 4000] - Wrote 363 (863) documents +659ms
-  couchtransform [Page offset 4000] - Completed writing to database mydatabase +43ms
+  couchtransform ******************** +0ms
+  couchtransform START - 2016-04-06T03:18:09.762Z +0ms
+  couchtransform Reading docs from _all_docs +161ms
+  couchtransform Total rows 4863 +1s
+  couchtransform Rows to process 4863 +0ms
+  couchtransform Number of pages 5 +0ms
+  couchtransform [Page 1] - BEGIN 2016-04-06T03:18:11.533Z +565ms
+  couchtransform [Page 1] - startkey 0001e569e47245d29fcf5f58bf6522f3 +0ms
+  couchtransform [Page 1] - startkey_docid 0001e569e47245d29fcf5f58bf6522f3 +0ms
+  couchtransform [Page 1] - docs to process 1000 +0ms
+  couchtransform [Page 1] - Wrote 500 (500) documents +2s
+  couchtransform [Page 1] - Wrote 500 (1000) documents +1s
+  couchtransform [Page 1] - Wrote 0 (1000) documents +102ms
+  couchtransform [Page 1] - Completed writing to database mydatabase +27ms
+  couchtransform [Page 1] - END 2016-04-06T03:18:14.655Z, duration 3122ms +0ms
+  couchtransform [Page 2] - BEGIN 2016-04-06T03:18:15.208Z +553ms
+  couchtransform [Page 2] - startkey 3583413b546f4bfab78d80464e142d82 +0ms
+  couchtransform [Page 2] - startkey_docid 3583413b546f4bfab78d80464e142d82 +0ms
+  couchtransform [Page 2] - docs to process 1000 +0ms
+  couchtransform [Page 2] - Wrote 500 (500) documents +2s
+  couchtransform [Page 2] - Wrote 500 (1000) documents +2s
+  couchtransform [Page 2] - Wrote 0 (1000) documents +91ms
+  couchtransform [Page 2] - Completed writing to database mydatabase +50ms
+  couchtransform [Page 2] - END 2016-04-06T03:18:18.876Z, duration 3668ms +0ms
+  couchtransform [Page 3] - BEGIN 2016-04-06T03:18:19.374Z +498ms
+  couchtransform [Page 3] - startkey 6900a84638de41558e70d16385102ad0 +0ms
+  couchtransform [Page 3] - startkey_docid 6900a84638de41558e70d16385102ad0 +0ms
+  couchtransform [Page 3] - docs to process 1000 +0ms
+  couchtransform [Page 3] - Wrote 500 (500) documents +1s
+  couchtransform [Page 3] - Wrote 500 (1000) documents +2s
+  couchtransform [Page 3] - Wrote 0 (1000) documents +87ms
+  couchtransform [Page 3] - Completed writing to database mydatabase +12ms
+  couchtransform [Page 3] - END 2016-04-06T03:18:22.430Z, duration 3056ms +0ms
+  couchtransform [Page 4] - BEGIN 2016-04-06T03:18:22.907Z +477ms
+  couchtransform [Page 4] - startkey a0277a9539724e9c80f0feee1b2d2ecc +0ms
+  couchtransform [Page 4] - startkey_docid a0277a9539724e9c80f0feee1b2d2ecc +0ms
+  couchtransform [Page 4] - docs to process 1000 +0ms
+  couchtransform [Page 4] - Wrote 500 (500) documents +2s
+  couchtransform [Page 4] - Wrote 500 (1000) documents +1s
+  couchtransform [Page 4] - Wrote 0 (1000) documents +81ms
+  couchtransform [Page 4] - Completed writing to database mydatabase +43ms
+  couchtransform [Page 4] - END 2016-04-06T03:18:25.998Z, duration 3091ms +0ms
+  couchtransform [Page 5] - BEGIN 2016-04-06T03:18:26.463Z +465ms
+  couchtransform [Page 5] - startkey d52996a7f2bf40d8a1e166f5b7872e33 +1ms
+  couchtransform [Page 5] - startkey_docid d52996a7f2bf40d8a1e166f5b7872e33 +0ms
+  couchtransform [Page 5] - docs to process 863 +0ms
+  couchtransform [Page 5] - Wrote 500 (500) documents +1s
+  couchtransform [Page 5] - Wrote 363 (863) documents +958ms
+  couchtransform [Page 5] - Completed writing to database mydatabase +35ms
+  couchtransform [Page 5] - END 2016-04-06T03:18:28.795Z, duration 2332ms +0ms
+  couchtransform END - 2016-04-06T03:18:28.798Z, duration 19036ms +3ms
   couchtransform Transform successful +0ms
 ```
 
