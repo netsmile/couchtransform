@@ -9,10 +9,14 @@ var debug = require("debug")("couchtransform"),
 var startDate = new Date();
 debug("START - " + startDate.toISOString());
 couchtransform.execute(config, function(err, data) {
-	if (err) return debug("ERROR: transform failed", err);
 	var endDate = new Date();
 	var diff = Math.abs(startDate - endDate);
-	debug("END - " + endDate.toISOString() + ", duration " + diff + "ms");
-	debug("Transform successful");
+	if (err) {
+		debug("END - " + endDate.toISOString() + ", duration " + diff + "ms");
+		debug("ERROR: transform failed", err);
+	} else {
+		debug("END - " + endDate.toISOString() + ", duration " + diff + "ms");
+		debug("Transform successful");
+	}
 });
 

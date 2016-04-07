@@ -25,11 +25,18 @@ function setPagesData(design, view, viewParams, pageSize, callback) {
 		pagesData.rows = data.rows.length;
 		var current = 0;
 		var page = 1;
+		var limit = pageSize;
 		while (current < pagesData.rows) {
+			if ((current + pageSize) > pagesData.rows) {
+				limit = pagesData.rows - current;
+			} else {
+				limit = pageSize;
+			}
 			pagesData.pages.push({
 				id: data.rows[current].id,
 				key: data.rows[current].key,
-				page: page
+				page: page,
+				limit: limit
 			});
 			current += pageSize;
 			page++;
@@ -102,7 +109,7 @@ function transform(opts, page, data, callback) {
 		}
 
 		writer.on("written", function(data) {
-			debug("[Page " + page + "] - Wrote " + data.documents + " (" + data.total + ") documents");
+			debug("[Page " + page + "] - Processed " + data.documents + " (" + data.total + ") documents, successful " + data.success + ", failed " + data.fail);
 		});
 
 		writer.on("writecomplete", function() {
@@ -140,7 +147,6 @@ var execute = function(opts, callback) {
 			debug("Total rows " + pagesData.total_rows);
 			debug("Rows to process " + pagesData.rows);
 			debug("Number of pages " + pagesData.pages.length);
-			//debug("Pages " + JSON.stringify(pagesData.pages, null, '  '));
 			var parallelism = opts.COUCH_PARALLELISM;
 			if (opts.OUTPUT_FILE) {
 				parallelism = 1;
@@ -149,14 +155,17 @@ var execute = function(opts, callback) {
 				var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
 				params.startkey_docid = page.id;
 				params.startkey = page.key;
-				params.limit = opts.COUCH_PAGE_SIZE;
+				params.limit = page.limit;
+				delete params.skip;
+				delete params.endkey;
+				delete params.endkey_docid;
 				db.view(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, function(err, result) {
 					if (err) return cb(err);
 					var startDate = new Date();
 					debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
 					debug("[Page " + page.page + "] - startkey " + page.key);
 					debug("[Page " + page.page + "] - startkey_docid " + page.id);
-					debug("[Page " + page.page + "] - docs to process " + result.rows.length);
+					debug("[Page " + page.page + "] - Docs to process " + result.rows.length);
 					transform(opts, page.page, result, function(err, result) {
 						if (err) return cb(err);
 						var endDate = new Date();
@@ -166,7 +175,7 @@ var execute = function(opts, callback) {
 					});
 				});
 			}, function(err) {
-				if (err) callback(err);
+				if (err) return callback(err);
 				callback(null);
 			});
 		});
@@ -178,7 +187,6 @@ var execute = function(opts, callback) {
 			debug("Total rows " + pagesData.total_rows);
 			debug("Rows to process " + pagesData.rows);
 			debug("Number of pages " + pagesData.pages.length);
-			//debug("Pages " + JSON.stringify(pagesData.pages, null, '  '));
 			var parallelism = opts.COUCH_PARALLELISM;
 			if (opts.OUTPUT_FILE) {
 				parallelism = 1;
@@ -187,14 +195,17 @@ var execute = function(opts, callback) {
 				var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
 				params.startkey_docid = page.id;
 				params.startkey = page.key;
-				params.limit = opts.COUCH_PAGE_SIZE;
+				params.limit = page.limit;
+				delete params.skip;
+				delete params.endkey;
+				delete params.endkey_docid;
 				db.list(params, function(err, result) {
 					if (err) return cb(err);
 					var startDate = new Date();
 					debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
 					debug("[Page " + page.page + "] - startkey " + page.key);
 					debug("[Page " + page.page + "] - startkey_docid " + page.id);
-					debug("[Page " + page.page + "] - docs to process " + result.rows.length);
+					debug("[Page " + page.page + "] - Docs to process " + result.rows.length);
 					transform(opts, page.page, result, function(err, result) {
 						if (err) return cb(err);
 						var endDate = new Date();

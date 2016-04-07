@@ -15,8 +15,19 @@ module.exports = function(couch_url, couch_database, buffer_size, parallelism) {
 			if (err) {
 				writer.emit("writeerror", err);
 			} else {
+				var success = 0;
+				var fail = 0;
+				data.forEach(function(row) {
+					if (row.error) fail++;
+					else success++;
+				});
 				written += payload.docs.length;
-				writer.emit("written", { documents: payload.docs.length, total: written});
+				writer.emit("written", {
+					documents: payload.docs.length,
+					total: written,
+					success: success,
+					fail: fail
+				});
 			}
 			cb();
 		});
