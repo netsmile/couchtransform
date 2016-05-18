@@ -48,7 +48,7 @@ or a local CouchDB installation:
 
 ### The name of the database - default "test"
 
-Define the name of the CouchDB database to read from by setting the "COUCH_DATABSE" environment variable e.g.
+Define the name of the CouchDB database to read from by setting the "COUCH_DATABASE" environment variable e.g.
 
 ```
   export COUCH_DATABASE="mydatabase"
@@ -87,6 +87,8 @@ Define the CouchDB database view parameters to use by setting the "COUCH_VIEW_PA
 The parameters need to follow the standard guidelines for CouchDB views 
 https://wiki.apache.org/couchdb/HTTP_view_API
 
+If you use the "key" or "keys" query parameters paging will be turned off.
+
 ### The custom transformation function - default nothing
 
 Define the path of a file containing a transformation function e.g. 
@@ -118,10 +120,10 @@ or a local CouchDB installation:
 
 ### The name of the destination database - default nothing
 
-Define the name of the destination CouchDB database to write to by setting the "COUCH_DEST_DATABSE" environment variable e.g.
+Define the name of the destination CouchDB database to write to by setting the "COUCH_DEST_DATABASE" environment variable e.g.
 
 ```
-  export COUCH_DEST_DATABSE="mydatabase"
+  export COUCH_DEST_DATABASE="mydatabase"
 ```
 
 ## Configuration - Input and Output Files

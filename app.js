@@ -136,89 +136,129 @@ var execute = function(opts, callback) {
 
 	if (opts.INPUT_FILE) {
 		var inputFile = require(opts.INPUT_FILE);
-		transform(opts, inputFile, function(err, result) {
+		var startDate = new Date();
+		debug("Reading docs from input file");
+		debug("[Page 1] - BEGIN " + startDate.toISOString());
+		debug("[Page 1] - Docs to process " + inputFile.rows.length);
+		transform(opts, 1, inputFile, function(err, result) {
 			if (err) return callback(err);
-			callback(null);
+			var endDate = new Date();
+			var diff = Math.abs(startDate - endDate);
+			debug("[Page 1] - END " + endDate.toISOString() + ", duration " + diff + "ms");
+			callback(null, result);
 		});
 	} else if (opts.COUCH_DESIGN && opts.COUCH_VIEW) {
 		debug("Reading docs from view " + "_design/" + opts.COUCH_DESIGN + "/_view/" + opts.COUCH_VIEW);
 		var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
-		setPagesData(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, opts.COUCH_PAGE_SIZE, function(err, pagesData) {
-			debug("Total rows " + pagesData.total_rows);
-			debug("Rows to process " + pagesData.rows);
-			debug("Number of pages " + pagesData.pages.length);
-			var parallelism = opts.COUCH_PARALLELISM;
-			if (opts.OUTPUT_FILE) {
-				parallelism = 1;
-			}
-			async.forEachLimit(pagesData.pages, parallelism, function(page, cb) {
-				var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
-				params.startkey_docid = page.id;
-				params.startkey = page.key;
-				params.limit = page.limit;
-				delete params.skip;
-				delete params.endkey;
-				delete params.endkey_docid;
-				db.view(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, function(err, result) {
+		if (params.key || params.keys) {
+			db.view(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, function(err, result) {
+				if (err) return cb(err);
+				var startDate = new Date();
+				debug("[Page 1] - BEGIN " + startDate.toISOString());
+				debug("[Page 1] - Docs to process " + result.rows.length);
+				transform(opts, 1, result, function(err, result) {
 					if (err) return cb(err);
-					var startDate = new Date();
-					debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
-					debug("[Page " + page.page + "] - startkey " + page.key);
-					debug("[Page " + page.page + "] - startkey_docid " + page.id);
-					debug("[Page " + page.page + "] - Docs to process " + result.rows.length);
-					transform(opts, page.page, result, function(err, result) {
-						if (err) return cb(err);
-						var endDate = new Date();
-						var diff = Math.abs(startDate - endDate);
-						debug("[Page " + page.page + "] - END " + endDate.toISOString() + ", duration " + diff + "ms");
-						cb(null);
-					});
+					var endDate = new Date();
+					var diff = Math.abs(startDate - endDate);
+					debug("[Page 1] - END " + endDate.toISOString() + ", duration " + diff + "ms");
+					cb(null);
 				});
-			}, function(err) {
-				if (err) return callback(err);
-				callback(null);
 			});
-		});
+		} else {
+			setPagesData(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, opts.COUCH_PAGE_SIZE, function(err, pagesData) {
+				if (err) return callback(err);
+				debug("Total rows " + pagesData.total_rows);
+				debug("Rows to process " + pagesData.rows);
+				debug("Number of pages " + pagesData.pages.length);
+				var parallelism = opts.COUCH_PARALLELISM;
+				if (opts.OUTPUT_FILE) {
+					parallelism = 1;
+				}
+				async.forEachLimit(pagesData.pages, parallelism, function(page, cb) {
+					var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
+					params.startkey_docid = page.id;
+					params.startkey = page.key;
+					params.limit = page.limit;
+					delete params.skip;
+					delete params.endkey;
+					delete params.endkey_docid;
+					db.view(opts.COUCH_DESIGN, opts.COUCH_VIEW, params, function(err, result) {
+						if (err) return cb(err);
+						var startDate = new Date();
+						debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
+						debug("[Page " + page.page + "] - startkey " + page.key);
+						debug("[Page " + page.page + "] - startkey_docid " + page.id);
+						debug("[Page " + page.page + "] - Docs to process " + result.rows.length);
+						transform(opts, page.page, result, function(err, result) {
+							if (err) return cb(err);
+							var endDate = new Date();
+							var diff = Math.abs(startDate - endDate);
+							debug("[Page " + page.page + "] - END " + endDate.toISOString() + ", duration " + diff + "ms");
+							cb(null);
+						});
+					});
+				}, function(err) {
+					if (err) return callback(err);
+					callback(null);
+				});
+			});
+		}
 	} else {
 		debug("Reading docs from _all_docs");
 		var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
-		setPagesData(null, null, params, opts.COUCH_PAGE_SIZE, function(err, pagesData) {
-			if (err) return callback(err);
-			debug("Total rows " + pagesData.total_rows);
-			debug("Rows to process " + pagesData.rows);
-			debug("Number of pages " + pagesData.pages.length);
-			var parallelism = opts.COUCH_PARALLELISM;
-			if (opts.OUTPUT_FILE) {
-				parallelism = 1;
-			}
-			async.forEachLimit(pagesData.pages, parallelism, function(page, cb) {
-				var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
-				params.startkey_docid = page.id;
-				params.startkey = page.key;
-				params.limit = page.limit;
-				delete params.skip;
-				delete params.endkey;
-				delete params.endkey_docid;
-				db.list(params, function(err, result) {
+		if (params.key || params.keys) {
+			db.list(params, function(err, result) {
+				if (err) return cb(err);
+				var startDate = new Date();
+				debug("[Page 1] - BEGIN " + startDate.toISOString());
+				debug("[Page 1] - Docs to process " + result.rows.length);
+				transform(opts, 1, result, function(err, result) {
 					if (err) return cb(err);
-					var startDate = new Date();
-					debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
-					debug("[Page " + page.page + "] - startkey " + page.key);
-					debug("[Page " + page.page + "] - startkey_docid " + page.id);
-					debug("[Page " + page.page + "] - Docs to process " + result.rows.length);
-					transform(opts, page.page, result, function(err, result) {
-						if (err) return cb(err);
-						var endDate = new Date();
-						var diff = Math.abs(startDate - endDate);
-						debug("[Page " + page.page + "] - END " + endDate.toISOString() + ", duration " + diff + "ms");
-						cb(null);
-					});
+					var endDate = new Date();
+					var diff = Math.abs(startDate - endDate);
+					debug("[Page 1] - END " + endDate.toISOString() + ", duration " + diff + "ms");
+					cb(null);
 				});
-			}, function(err) {
-				if (err) return callback(err);
-				callback(null);
 			});
-		});
+		} else {
+			setPagesData(null, null, params, opts.COUCH_PAGE_SIZE, function(err, pagesData) {
+				if (err) return callback(err);
+				debug("Total rows " + pagesData.total_rows);
+				debug("Rows to process " + pagesData.rows);
+				debug("Number of pages " + pagesData.pages.length);
+				var parallelism = opts.COUCH_PARALLELISM;
+				if (opts.OUTPUT_FILE) {
+					parallelism = 1;
+				}
+				async.forEachLimit(pagesData.pages, parallelism, function(page, cb) {
+					var params = JSON.parse(opts.COUCH_VIEW_PARAMS);
+					params.startkey_docid = page.id;
+					params.startkey = page.key;
+					params.limit = page.limit;
+					delete params.skip;
+					delete params.endkey;
+					delete params.endkey_docid;
+					db.list(params, function(err, result) {
+						if (err) return cb(err);
+						var startDate = new Date();
+						debug("[Page " + page.page + "] - BEGIN " + startDate.toISOString());
+						debug("[Page " + page.page + "] - startkey " + page.key);
+						debug("[Page " + page.page + "] - startkey_docid " + page.id);
+						debug("[Page " + page.page + "] - Docs to process " + result.rows.length);
+						transform(opts, page.page, result, function(err, result) {
+							if (err) return cb(err);
+							var endDate = new Date();
+							var diff = Math.abs(startDate - endDate);
+							debug("[Page " + page.page + "] - END " + endDate.toISOString() + ", duration " + diff + "ms");
+							cb(null);
+						});
+					});
+				}, function(err) {
+					if (err) return callback(err);
+					callback(null);
+				});
+			});
+		}
 	}
 };
 
