@@ -87,7 +87,7 @@ Define the CouchDB database view parameters to use by setting the "COUCH_VIEW_PA
 The parameters need to follow the standard guidelines for CouchDB views 
 https://wiki.apache.org/couchdb/HTTP_view_API
 
-If you use the "key" or "keys" query parameters paging will be turned off.
+NOTE: the "keys" query parameter is NOT supported.
 
 ### The custom transformation function - default nothing
 
